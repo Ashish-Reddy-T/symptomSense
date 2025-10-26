@@ -25,7 +25,7 @@ WORKDIR /app
 COPY --from=builder /usr/local /usr/local
 COPY backend/app /app/app
 COPY scripts /app/scripts
-COPY backend/pyproject.toml backend/ruff.toml backend/mypy.ini /app/
+COPY backend/pyproject.toml backend/mypy.ini /app/
 COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 

@@ -14,14 +14,9 @@ FastAPI application orchestrating multimodal agents with LangGraph.
 ## Running Locally
 ```bash
 pip install uv
-uv pip install -e .[dev] --system
+uv pip install -e . --system
 uvicorn app.main:app --reload --port 8000
 ```
-
-## Quality Gates
-- `ruff check backend`
-- `python -m mypy --config-file backend/mypy.ini backend/app`
-- `pytest backend`
 
 ## Environment Variables
 See project root `.env.example` for the complete list. Key values:

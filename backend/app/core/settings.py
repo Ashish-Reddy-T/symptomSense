@@ -25,10 +25,10 @@ class Settings(BaseSettings):
     PARSER: Literal["docling", "unstructured"] = "docling"
 
     # Models
-    VIT_MODEL: str = "google/vit-base-patch16-224"
+    VIT_MODEL: str = "backend/app/models/vit-xray-pneumonia"
     TORCH_DEVICE: Literal["cpu", "cuda"] = "cpu"
     WHISPER_MODEL: str = "small"
-    PIPER_VOICE: str = "en_US-amy-low"
+    PIPER_VOICE: str = "en_US-amy-medium"
     PIPER_MODEL_PATH: str | None = None
     GEMINI_MODEL: str = "models/gemini-2.5-flash"
     GEMINI_EMBED_MODEL: str = "models/text-embedding-005"

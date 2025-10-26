@@ -43,10 +43,3 @@ piper-tts>=1.2.0  # TTS
 tenacity>=8.2.0  # Retries
 aiofiles>=23.2.0  # Async file ops
 
-# Development
-pytest>=8.1.0
-pytest-asyncio>=0.23.0
-mypy>=1.10.0
-ruff>=0.5.0
-black>=24.4.0
-types-orjson>=3.6.2

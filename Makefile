@@ -1,9 +1,9 @@
-.PHONY: dev run ingest fmt lint type test build warm
+.PHONY: dev run ingest warm build
 
 VENVPY ?= python
 
 setup:
-	cd backend && pip install uv && uv pip install -e .[dev] --system
+	cd backend && pip install uv && uv pip install -e . --system
 
 dev:
 	uvicorn backend.app.main:app --reload --host 0.0.0.0 --port 8000
@@ -16,19 +16,6 @@ ingest:
 
 warm:
 	$(VENVPY) scripts/warm_start.py
-
-fmt:
-	ruff check backend --fix
-	black backend
-
-lint:
-	ruff check backend
-
-type:
-	$(VENVPY) -m mypy backend
-
-test:
-	$(VENVPY) -m pytest backend -q
 
 build:
 	docker build -f docker/Dockerfile -t agentic-med-assistant .

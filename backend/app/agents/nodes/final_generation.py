@@ -91,7 +91,14 @@ User query:
     try:
         parsed = AgentAnswer.model_validate_json(raw)
     except Exception as exc:  # pragma: no cover - parsing errors
-        logger.warning("final_generation_parse_failed", raw=raw, error=str(exc))
+        # pass large/unstructured data via the `extra` mapping so stdlib logging
+        # (and adapters) don't receive unexpected keyword args. Keep a concise
+        # message as the main log record for readability.
+        logger.warning(
+            "final_generation_parse_failed: parsing AgentAnswer failed: %s",
+            str(exc),
+            extra={"raw": raw, "error": str(exc)},
+        )
         parsed = AgentAnswer(answer=raw.strip(), citations=[], follow_up=[], warnings=[])
 
     answer_with_citations = parsed.answer.strip()
