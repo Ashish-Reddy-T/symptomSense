@@ -31,7 +31,7 @@ class Settings(BaseSettings):
     PIPER_VOICE: str = "en_US-amy-low"
     PIPER_MODEL_PATH: str | None = None
     GEMINI_MODEL: str = "models/gemini-2.5-flash"
-    GEMINI_EMBED_MODEL: str = "models/text-embedding-005"
+    GEMINI_EMBED_MODEL: str = "gemini-embedding-001"
     GEMINI_EMBED_DIMENSION: int | None = None
     OPENROUTER_MODEL: str = "openrouter/mistral-7b-instruct"
     RERANKER_MODEL: str = "cross-encoder/ms-marco-MiniLM-L-6-v2"
