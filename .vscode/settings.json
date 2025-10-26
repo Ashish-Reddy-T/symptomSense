@@ -1,0 +1,10 @@
+{
+  "python.defaultInterpreterPath": "python",
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "explicit"
+  },
+  "ruff.path": ["ruff"],
+  "ruff.args": ["--config", "backend/ruff.toml"],
+  "python.analysis.typeCheckingMode": "strict"
+}

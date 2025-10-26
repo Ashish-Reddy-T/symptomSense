@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Agentic Medical Assistant</title>
+    <link rel="stylesheet" href="../src/styles.css" />
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>Agentic RAG Assistant</h1>
+        <p>Ask a medical question, upload an image, or record audio for transcription.</p>
+      </header>
+      <section class="panel">
+        <form id="query-form">
+          <label for="text_query">Question</label>
+          <textarea id="text_query" placeholder="Describe symptoms or ask about a document..."></textarea>
+          <label for="image_file">Attach image</label>
+          <input type="file" id="image_file" accept="image/*" />
+          <div class="controls">
+            <button type="button" id="record-btn">🎙 Record</button>
+            <button type="submit">Run Agent</button>
+          </div>
+        </form>
+        <section id="transcript"></section>
+      </section>
+      <section class="panel" id="answer-panel">
+        <h2>Answer</h2>
+        <div id="answer"></div>
+        <div id="citations"></div>
+        <div id="warnings" class="warning"></div>
+      </section>
+    </main>
+    <script type="module" src="../src/main.js"></script>
+  </body>
+</html>
