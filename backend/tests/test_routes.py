@@ -22,6 +22,7 @@ def test_process_input_success(client: TestClient) -> None:
     body = response.json()
     assert body["answer"].startswith("Echo")
     assert body["citations"]
+    assert isinstance(body["follow_up"], list)
 
 
 def test_stt_endpoint(client: TestClient) -> None:

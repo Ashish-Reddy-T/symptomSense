@@ -1,11 +1,11 @@
 # Agentic Medical Assistant
 
-Agentic, multimodal RAG stack built for the PSU hackathon. A FastAPI backend orchestrated by LangGraph combines document retrieval (Docling + Qdrant + Gemini embeddings), ViT image analysis, faster-whisper speech-to-text, and Piper TTS. Gemini powers the primary reasoning loop with optional OpenRouter failover. A lightweight vanilla JS frontend drives the demo.
+Agentic, multimodal RAG stack built for the PSU hackathon. A FastAPI backend orchestrated by LangGraph combines document retrieval (Docling + Qdrant + Gemini embeddings), ViT image analysis, faster-whisper speech-to-text, and Piper TTS. Gemini 2.5 Flash powers the primary reasoning loop with optional OpenRouter failover. A lightweight vanilla JS frontend drives the demo.
 
 ## Highlights
 - **Agentic LangGraph flow**: input classification, document RAG, image analysis, final synthesis, and confidence verification.
-- **Multimodal I/O**: PDF ingestion via Docling, ViT-based imaging, faster-whisper STT, Piper TTS playback.
-- **Retrieval infra**: Gemini text-embedding-004 vectors stored in Qdrant with cross-encoder reranking.
+- **Multimodal I/O**: PDF ingestion via Docling, ViT-based imaging, faster-whisper STT, Piper TTS playback with local voice packs.
+- **Retrieval infra**: Gemini text-embedding-005 vectors stored in Qdrant with cross-encoder reranking.
 - **Production tooling**: Docker/Docker Compose, Prometheus metrics, structured logging, CI with Ruff + mypy + pytest.
 
 ## Quickstart
@@ -55,7 +55,7 @@ Ensure required models (torch, transformers, docling, faster-whisper, piper) are
 ## Frontend Features
 - Text + image submission with MediaRecorder-based audio capture.
 - Live STT transcription populates the query box.
-- TTS playback generates speech from answers via Piper.
+- TTS playback via Piper, inline citations, follow-up actions, and confidence banners rendered in the UI.
 
 ## Architecture
 See `AGENTS.md` and `tree.md` for the complete blueprint plus Mermaid diagram.

@@ -1,7 +1,7 @@
 """File-system helpers for local persistence."""
 
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Iterable
 
 
 def ensure_dir(path: Path | str) -> Path:

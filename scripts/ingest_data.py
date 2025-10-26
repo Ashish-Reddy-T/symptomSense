@@ -2,16 +2,23 @@
 
 from __future__ import annotations
 
-import logging
+import sys
 from pathlib import Path
 
+import structlog
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
 from backend.app.core.settings import Settings
+from backend.app.core.logging import configure_logging
 from backend.app.services.docling_service import parse_pdf_to_markdown
-from backend.app.services.rag_service import EMBEDDING_DIM, GeminiClient, GeminiRetriever, chunk_markdown
+from backend.app.services.rag_service import GeminiClient, GeminiRetriever, chunk_markdown
 from backend.app.storage.qdrant_client import ensure_collection, init_qdrant
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+configure_logging()
+logger = structlog.get_logger(__name__)
 
 
 def iter_pdfs(base_dir: Path) -> list[Path]:
@@ -25,9 +32,10 @@ def ingest() -> None:
         logger.warning("knowledge_dir_missing", path=str(knowledge_dir))
         return
 
-    qdrant = init_qdrant(settings)
-    ensure_collection(qdrant, settings.QDRANT_COLLECTION, vector_size=EMBEDDING_DIM)
     gemini = GeminiClient(settings=settings)
+    embed_dim = gemini.embedding_dimension
+    qdrant = init_qdrant(settings)
+    ensure_collection(qdrant, settings.QDRANT_COLLECTION, vector_size=embed_dim)
     retriever = GeminiRetriever(settings=settings, client=qdrant, gemini=gemini)
 
     try:

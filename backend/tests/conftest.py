@@ -1,13 +1,12 @@
 from __future__ import annotations
 
 import os
-from typing import Iterator
+from collections.abc import Iterator
 
 import pytest
+from backend.app.routers import health, process_input, stt, tts
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-
-from backend.app.routers import health, process_input, stt, tts
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -24,13 +23,19 @@ class FakeGraph:
             "final_answer": f"Echo: {text}".strip(),
             "citations": [{"label": "doc1", "source": "test.pdf", "score": 0.9}],
             "warnings": [],
+            "follow_up": ["Confirm vitals", "Consult specialist"],
             "image_analysis": {"label": "Healthy", "confidence": 0.95},
         }
 
 
 class FakeSTT:
     def transcribe_bytes(self, _: bytes, *, language: str | None = None) -> dict:
-        return {"text": "transcript", "language": language or "en", "duration": 1.0, "words": ["transcript"]}
+        return {
+            "text": "transcript",
+            "language": language or "en",
+            "duration": 1.0,
+            "words": ["transcript"],
+        }
 
 
 class FakeTTS:

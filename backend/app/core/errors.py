@@ -1,13 +1,13 @@
 """Centralised FastAPI exception handlers."""
 
-import logging
 from typing import Any
 
+import structlog
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 def _format_error(message: str, *, detail: Any = None) -> dict[str, Any]:
@@ -19,7 +19,10 @@ def _format_error(message: str, *, detail: Any = None) -> dict[str, Any]:
 
 async def handle_validation_error(_: Request, exc: ValidationError) -> JSONResponse:
     logger.warning("validation_error", errors=exc.errors())
-    return JSONResponse(status_code=422, content=_format_error("Validation error", detail=exc.errors()))
+    return JSONResponse(
+        status_code=422,
+        content=_format_error("Validation error", detail=exc.errors()),
+    )
 
 
 async def handle_http_exception(_: Request, exc: HTTPException) -> JSONResponse:

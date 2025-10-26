@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-import asyncio
+import json
 
 import pytest
-
 from backend.app.agents.nodes.classify_input import classify_input
 from backend.app.agents.nodes.confidence_verification import confidence_verification
 from backend.app.agents.nodes.final_generation import final_generation
@@ -25,7 +24,14 @@ class StubGemini:
 
     def generate_with_fallback(self, prompt: str) -> str:
         self.prompts.append(prompt)
-        return "Answer with [doc1] citation"
+        return json.dumps(
+            {
+                "answer": "Answer with [doc1] citation",
+                "citations": ["doc1"],
+                "follow_up": ["Check labs"],
+                "warnings": [],
+            }
+        )
 
 
 @pytest.mark.asyncio
@@ -43,6 +49,7 @@ async def test_final_generation_formats_prompt() -> None:
     assert "Answer" in result["final_answer"]
     assert gemini.prompts
     assert result["citations"][0]["source"] == "doc.pdf"
+    assert result["follow_up"] == ["Check labs"]
 
 
 @pytest.mark.asyncio

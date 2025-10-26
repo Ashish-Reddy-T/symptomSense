@@ -4,16 +4,16 @@ from __future__ import annotations
 
 import base64
 import io
-import logging
 from dataclasses import dataclass
 
+import structlog
 import torch
 from PIL import Image
 from transformers import AutoImageProcessor, AutoModelForImageClassification
 
 from ..core.settings import Settings
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 def _resolve_device(preferred: str) -> str:

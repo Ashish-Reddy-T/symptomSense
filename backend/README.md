@@ -20,15 +20,16 @@ uvicorn app.main:app --reload --port 8000
 
 ## Quality Gates
 - `ruff check backend`
-- `mypy backend`
+- `python -m mypy --config-file backend/mypy.ini backend/app`
 - `pytest backend`
 
 ## Environment Variables
 See project root `.env.example` for the complete list. Key values:
 - `GEMINI_API_KEY` (required)
 - `QDRANT_MODE` (`memory` for hackathon portability)
-- `PIPER_MODEL_PATH` path to the `.onnx` voice file used by Piper CLI
+- `PIPER_MODEL_PATH` path to the `.onnx` voice file used by Piper CLI (defaults to the bundled `backend/app/models/piper-en_US-amy-medium/model.onnx`)
 - `TORCH_DEVICE` to toggle CPU vs CUDA
+- `GEMINI_EMBED_DIMENSION` if set, skips runtime probing for vector length (useful in offline demos)
 
 ## Worker Notes
 - Warm models via `python scripts/warm_start.py` before demos to avoid cold starts.

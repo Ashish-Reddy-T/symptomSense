@@ -8,8 +8,14 @@ from pydantic import BaseModel, Field
 
 
 class ProcessInputRequest(BaseModel):
-    text_query: str | None = Field(default=None, description="The user's textual question or notes.")
-    image_base64: str | None = Field(default=None, description="Optional base64-encoded image data URL.")
+    text_query: str | None = Field(
+        default=None,
+        description="The user's textual question or notes.",
+    )
+    image_base64: str | None = Field(
+        default=None,
+        description="Optional base64-encoded image data URL.",
+    )
 
 
 class Citation(BaseModel):
@@ -22,6 +28,7 @@ class ProcessInputResponse(BaseModel):
     answer: str
     citations: list[Citation] = Field(default_factory=list)
     warnings: list[str] = Field(default_factory=list)
+    follow_up: list[str] = Field(default_factory=list)
     image_analysis: dict[str, Any] | None = None
 
 

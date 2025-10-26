@@ -24,15 +24,17 @@ setup_tracing(settings)
 async def lifespan(app: FastAPI):
     from .agents.graph import build_graph
     from .services.image_service import ViTImageClassifier
-    from .services.rag_service import EMBEDDING_DIM, GeminiClient, GeminiRetriever
+    from .services.rag_service import GeminiClient, GeminiRetriever
     from .services.stt_service import WhisperService
     from .services.tts_service import PiperService
     from .storage.qdrant_client import ensure_collection, init_qdrant
 
-    qdrant = init_qdrant(settings)
-    ensure_collection(qdrant, settings.QDRANT_COLLECTION, vector_size=EMBEDDING_DIM)
-
     gemini = GeminiClient(settings=settings)
+    embed_dim = gemini.embedding_dimension
+
+    qdrant = init_qdrant(settings)
+    ensure_collection(qdrant, settings.QDRANT_COLLECTION, vector_size=embed_dim)
+
     retriever = GeminiRetriever(settings=settings, client=qdrant, gemini=gemini)
     vit_classifier = ViTImageClassifier(settings=settings)
     stt_service = WhisperService(settings=settings)

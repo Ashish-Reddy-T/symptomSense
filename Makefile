@@ -12,10 +12,10 @@ run:
 	cd infra && docker compose up --build
 
 ingest:
-	python scripts/ingest_data.py
+	$(VENVPY) scripts/ingest_data.py
 
 warm:
-	python scripts/warm_start.py
+	$(VENVPY) scripts/warm_start.py
 
 fmt:
 	ruff check backend --fix
@@ -25,10 +25,10 @@ lint:
 	ruff check backend
 
 type:
-	mypy backend
+	$(VENVPY) -m mypy backend
 
 test:
-	pytest backend -q
+	$(VENVPY) -m pytest backend -q
 
 build:
 	docker build -f docker/Dockerfile -t agentic-med-assistant .

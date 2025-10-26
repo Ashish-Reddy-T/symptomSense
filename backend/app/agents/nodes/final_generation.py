@@ -6,6 +6,7 @@ import logging
 from typing import Any
 
 from ...core.settings import Settings
+from ...models.schema import AgentAnswer
 from ...services.rag_service import GeminiClient
 
 logger = logging.getLogger(__name__)
@@ -22,13 +23,9 @@ def _format_context(documents: list[dict]) -> tuple[str, list[dict], float | Non
         text = (doc.get("text") or "").strip()
         truncated = text[:750] + ("…" if len(text) > 750 else "")
         lines.append(f"[doc{idx}] {truncated}")
-        citations.append(
-            {
-                "label": f"doc{idx}",
-                "source": doc.get("metadata", {}).get("source_file") or doc.get("metadata", {}).get("source"),
-                "score": doc.get("score"),
-            }
-        )
+        metadata = doc.get("metadata", {})
+        source = metadata.get("source_file") or metadata.get("source")
+        citations.append({"label": f"doc{idx}", "source": source, "score": doc.get("score")})
         score = doc.get("score")
         if isinstance(score, (int, float)):
             total_score += float(score)
@@ -58,11 +55,21 @@ async def final_generation(
 
     prompt = f"""
 You are an evidence-focused medical assistant helping clinicians during a hackathon demo.
-Use the supplied sources to craft an accurate, concise answer. Follow these rules:
+Use the supplied sources to craft an accurate, concise answer. Respond as strict JSON
+matching this schema:
+{{
+  "answer": "markdown string for the user",
+  "citations": ["doc1", "doc2"],
+  "follow_up": ["bullet item"],
+  "warnings": ["confidence warnings"]
+}}
+
+Guidelines:
 - Prefer clinical, verifiable language; do not invent facts.
 - Cite evidence inline using [docN] notation when referencing a context snippet.
-- If context is insufficient or uncertain, clearly state limitations.
-- Finish with a short bullet list of recommended follow-up actions.
+- Explicitly mention uncertainty when context is insufficient.
+- Provide 2-3 follow_up actions tailored to the query.
+- Include warnings if you are unsure about the recommendation.
 
 Context snippets:
 {context_text}
@@ -72,19 +79,28 @@ Image insights:
 
 User query:
 {question}
-
-Respond in Markdown.
 """
     try:
-        answer = gemini.generate_with_fallback(prompt)
+        raw = gemini.generate_with_fallback(prompt)
     except Exception as exc:  # pragma: no cover - LLM failure path
         logger.exception("final_generation_failed", error=str(exc))
         state["final_answer"] = "I encountered an error while generating the response."
         state.setdefault("warnings", []).append("LLM generation failed; using fallback messaging.")
         return state
 
-    state["final_answer"] = answer.strip()
+    try:
+        parsed = AgentAnswer.model_validate_json(raw)
+    except Exception as exc:  # pragma: no cover - parsing errors
+        logger.warning("final_generation_parse_failed", raw=raw, error=str(exc))
+        parsed = AgentAnswer(answer=raw.strip(), citations=[], follow_up=[], warnings=[])
+
+    answer_with_citations = parsed.answer.strip()
+    state["final_answer"] = answer_with_citations
     state["citations"] = citations
+    state.setdefault("warnings", [])
+    if parsed.warnings:
+        state["warnings"].extend(parsed.warnings)
+    state["follow_up"] = parsed.follow_up
     state["avg_context_score"] = avg_score
     state.setdefault("logprobs", [])
     state["raw_prompt"] = prompt

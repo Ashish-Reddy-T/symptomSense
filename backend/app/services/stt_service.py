@@ -2,16 +2,15 @@
 
 from __future__ import annotations
 
-import logging
 import tempfile
 from pathlib import Path
-from typing import Iterable
 
+import structlog
 from faster_whisper import WhisperModel
 
 from ..core.settings import Settings
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 def _compute_type(device: str) -> str:

@@ -29,11 +29,15 @@ async def process_input(req: ProcessInputRequest, request: Request) -> ProcessIn
         raise
 
     citations_data = result.get("citations") or []
-    citations = [citation if isinstance(citation, Citation) else Citation(**citation) for citation in citations_data]
+    citations = [
+        citation if isinstance(citation, Citation) else Citation(**citation)
+        for citation in citations_data
+    ]
 
     return ProcessInputResponse(
         answer=result.get("final_answer", ""),
         citations=citations,
         warnings=result.get("warnings") or [],
+        follow_up=result.get("follow_up") or [],
         image_analysis=result.get("image_analysis"),
     )

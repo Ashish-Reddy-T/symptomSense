@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import Any
 
 import pytest
-
 from backend.app.core.settings import Settings
 from backend.app.services import rag_service
 from backend.app.services.rag_service import GeminiRetriever, chunk_markdown

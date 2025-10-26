@@ -11,7 +11,12 @@ from ...services.rag_service import GeminiRetriever
 logger = logging.getLogger(__name__)
 
 
-async def document_rag(state: dict[str, Any], *, retriever: GeminiRetriever, settings: Settings) -> dict[str, Any]:
+async def document_rag(
+    state: dict[str, Any],
+    *,
+    retriever: GeminiRetriever,
+    settings: Settings,
+) -> dict[str, Any]:
     query = (state.get("text_query") or "").strip()
     if not query:
         state["rag_documents"] = []

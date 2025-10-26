@@ -2,25 +2,20 @@
 
 from __future__ import annotations
 
-import logging
 import re
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Sequence
 
 import google.generativeai as genai
 import httpx
+import structlog
 from sentence_transformers import CrossEncoder
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from ..core.settings import Settings
 from ..storage.qdrant_client import query_collection, upsert_points
 
-logger = logging.getLogger(__name__)
-
-# Gemini text-embedding-004 dimensionality.
-EMBEDDING_DIM = 768
-
-
+logger = structlog.get_logger(__name__)
 
 def chunk_markdown(markdown: str, max_chars: int = 1500, overlap: int = 200) -> list[str]:
     """Split markdown into overlapping windows with preference for headings."""
@@ -52,12 +47,13 @@ def chunk_markdown(markdown: str, max_chars: int = 1500, overlap: int = 200) -> 
 
 
 @retry(wait=wait_exponential(multiplier=1, min=1, max=30), stop=stop_after_attempt(3))
-def _embed_text(model: genai.EmbeddingModel, text: str) -> list[float]:
-    response = model.embed_content(text)
-    embedding = getattr(response, "embedding", None) or response.get("embedding")
-    values = getattr(embedding, "values", None)
-    if values is not None:
-        return list(values)
+def _embed_text(model_name: str, text: str) -> list[float]:
+    response = genai.embed_content(model=model_name, content=text)
+    embedding = response.get("embedding")
+    if embedding is None:
+        raise RuntimeError("No embedding returned from Gemini.")
+    if hasattr(embedding, "values"):
+        return list(embedding.values)
     return list(embedding)
 
 
@@ -89,22 +85,39 @@ class GeminiClient:
         self,
         settings: Settings,
         *,
-        embedding_model: genai.EmbeddingModel | None = None,
         generative_model: genai.GenerativeModel | None = None,
     ) -> None:
         self.settings = settings
         genai.configure(api_key=settings.GEMINI_API_KEY)
-        self._embedding_model = embedding_model or genai.EmbeddingModel(model_name=settings.GEMINI_EMBED_MODEL)
-        self._generative_model = generative_model or genai.GenerativeModel(model_name=settings.GEMINI_MODEL)
+        self._embed_model_name = settings.GEMINI_EMBED_MODEL
+        self._generative_model = generative_model or genai.GenerativeModel(
+            model_name=settings.GEMINI_MODEL
+        )
+        self._embedding_dim: int | None = settings.GEMINI_EMBED_DIMENSION
 
     def embed(self, text: str) -> list[float]:
-        return _embed_text(self._embedding_model, text)
+        vector = _embed_text(self._embed_model_name, text)
+        if self._embedding_dim is None:
+            self._embedding_dim = len(vector)
+        return vector
 
     def embed_batch(self, texts: Sequence[str]) -> list[list[float]]:
         return [self.embed(text) for text in texts]
 
     def generate(self, prompt: str) -> str:
         return _generate_text(self._generative_model, prompt)
+
+    @property
+    def embedding_dimension(self) -> int:
+        if self._embedding_dim is not None:
+            return self._embedding_dim
+        try:
+            probe_vector = self.embed("dimension probe")
+            self._embedding_dim = len(probe_vector)
+        except Exception as exc:  # pragma: no cover - offline environments
+            logger.warning("gemini_embedding_probe_failed: %s", exc)
+            self._embedding_dim = self.settings.GEMINI_EMBED_DIMENSION or 3072
+        return self._embedding_dim
 
     def generate_with_fallback(self, prompt: str) -> str:
         try:
@@ -125,7 +138,11 @@ class GeminiClient:
             "messages": [{"role": "user", "content": prompt}],
         }
         with httpx.Client(timeout=30) as client:
-            response = client.post("https://openrouter.ai/api/v1/chat/completions", json=payload, headers=headers)
+            response = client.post(
+                "https://openrouter.ai/api/v1/chat/completions",
+                json=payload,
+                headers=headers,
+            )
             response.raise_for_status()
         data = response.json()
         choices = data.get("choices") or []
@@ -211,7 +228,10 @@ class GeminiRetriever:
         scores = reranker.predict(pairs)
         for hit, score in zip(hits, scores, strict=False):
             hit["rerank_score"] = float(score)
-        return sorted(hits, key=lambda item: item.get("rerank_score", item.get("score", 0)), reverse=True)
+        def _score(item: dict) -> float:
+            return float(item.get("rerank_score", item.get("score", 0.0)) or 0.0)
+
+        return sorted(hits, key=_score, reverse=True)
 
     def _get_reranker(self) -> CrossEncoder | None:
         if self.settings.ENV == "test":

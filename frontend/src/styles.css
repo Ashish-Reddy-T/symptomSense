@@ -77,7 +77,13 @@ button:disabled {
   white-space: pre-wrap;
 }
 
-#citations ul {
+#citations ul,
+#follow-up ul,
+#warnings ul {
   list-style: disc;
   padding-left: 1.5rem;
+}
+
+#image-analysis {
+  margin-top: 1rem;
 }

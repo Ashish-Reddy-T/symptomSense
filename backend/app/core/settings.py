@@ -3,7 +3,7 @@
 from pathlib import Path
 from typing import Literal
 
-from pydantic import Field, validator
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -30,8 +30,9 @@ class Settings(BaseSettings):
     WHISPER_MODEL: str = "small"
     PIPER_VOICE: str = "en_US-amy-low"
     PIPER_MODEL_PATH: str | None = None
-    GEMINI_MODEL: str = "models/gemini-1.5-pro-latest"
-    GEMINI_EMBED_MODEL: str = "models/text-embedding-004"
+    GEMINI_MODEL: str = "models/gemini-2.5-flash"
+    GEMINI_EMBED_MODEL: str = "models/text-embedding-005"
+    GEMINI_EMBED_DIMENSION: int | None = None
     OPENROUTER_MODEL: str = "openrouter/mistral-7b-instruct"
     RERANKER_MODEL: str = "cross-encoder/ms-marco-MiniLM-L-6-v2"
 
@@ -42,7 +43,7 @@ class Settings(BaseSettings):
     # App meta
     APP_HOST: str = "0.0.0.0"
     APP_PORT: int = 8000
-    ENV: Literal["dev", "prod"] = "dev"
+    ENV: Literal["dev", "prod", "test"] = "dev"
     LOG_LEVEL: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"
     LOG_STRUCTURED: bool = True
 
@@ -51,6 +52,16 @@ class Settings(BaseSettings):
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
-    @validator("QDRANT_PATH", pre=True)
-    def _coerce_path(cls, value: str | Path) -> Path:  # noqa: N805
+    @field_validator("QDRANT_PATH", mode="before")
+    @classmethod
+    def _coerce_path(cls, value: str | Path) -> Path:
         return Path(value)
+
+    @field_validator("FRONTEND_ORIGINS", mode="before")
+    @classmethod
+    def _parse_origins(cls, value) -> list[str]:
+        if isinstance(value, str):
+            if value.strip() == "*":
+                return ["*"]
+            return [item.strip() for item in value.split(",") if item.strip()]
+        return value

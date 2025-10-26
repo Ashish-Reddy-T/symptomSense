@@ -2,16 +2,16 @@
 
 from __future__ import annotations
 
-import logging
-from typing import Mapping, Sequence
+from collections.abc import Mapping, Sequence
 
+import structlog
 from qdrant_client import QdrantClient
 from qdrant_client.http.models import Distance, Filter, PointStruct, VectorParams
 
 from ..core.settings import Settings
 from .files import ensure_dir
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 def init_qdrant(settings: Settings) -> QdrantClient:
@@ -34,7 +34,7 @@ def ensure_collection(client: QdrantClient, name: str, vector_size: int) -> None
     if client.collection_exists(name):
         return
 
-    logger.info("creating qdrant collection", name=name, vector_size=vector_size)
+    logger.info("creating_qdrant_collection", name=name, vector_size=vector_size)
     client.create_collection(
         collection_name=name,
         vectors_config=VectorParams(size=vector_size, distance=Distance.COSINE),

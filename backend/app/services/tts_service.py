@@ -2,15 +2,16 @@
 
 from __future__ import annotations
 
-import logging
 import shutil
 import subprocess
 import tempfile
 from pathlib import Path
 
+import structlog
+
 from ..core.settings import Settings
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 DEFAULT_SAMPLE_RATE = 22050
 
@@ -54,8 +55,7 @@ class PiperService:
                 cmd,
                 input=text.encode("utf-8"),
                 check=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
+                capture_output=True,
             )
             audio = Path(tmp.name).read_bytes()
         logger.info("piper_synthesize_done", bytes=len(audio))

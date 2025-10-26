@@ -11,7 +11,11 @@ router = APIRouter()
 
 
 @router.post("/stt", response_model=STTResponse)
-async def stt_endpoint(request: Request, audio: UploadFile = File(...), language: str | None = Form(default=None)) -> STTResponse:
+async def stt_endpoint(
+    request: Request,
+    audio: UploadFile = File(...),  # noqa: B008 - FastAPI pattern requires callable default
+    language: str | None = Form(default=None),
+) -> STTResponse:
     tracker = RequestTracker("stt")
     service = getattr(request.app.state, "stt_service", None)
     if service is None:
