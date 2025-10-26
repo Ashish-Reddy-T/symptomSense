@@ -8,8 +8,14 @@
 
 ### Step 1: Check Prerequisites (30 seconds)
 ```bash
-# Verify backend and frontend are running
+# Verify backend is running
 curl http://localhost:8000/health  # Should return {"status":"ok"}
+
+# Choose your frontend:
+# Option A: AngularJS (Recommended - Modern UI with voice/image)
+curl http://localhost:4200/        # Should return HTML
+
+# Option B: Legacy Vanilla JS
 curl http://localhost:3000/        # Should return HTML
 
 # If not running, see "Start Services" below
@@ -17,6 +23,10 @@ curl http://localhost:3000/        # Should return HTML
 
 ### Step 2: Open Browser (10 seconds)
 ```
+# AngularJS Frontend (Recommended):
+http://localhost:4200/
+
+# OR Legacy Frontend:
 http://localhost:3000/public/
 ```
 
@@ -49,10 +59,25 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000
 # Wait for: "Application startup complete"
 ```
 
-### Terminal 2 - Frontend
+### Terminal 2 - Frontend (Choose One)
+
+#### Option A: AngularJS Frontend (Recommended)
+```bash
+cd /Users/AshishR_T/Desktop/hackPSU/agentic-med-assistant/angularJS
+npm install --legacy-peer-deps  # First time only
+npm run start:local
+
+# Opens at: http://localhost:4200
+# Features: Voice input, image upload, session management, modern UI
+```
+
+#### Option B: Legacy Vanilla JS Frontend
 ```bash
 cd /Users/AshishR_T/Desktop/hackPSU/agentic-med-assistant/frontend
 python3 -m http.server 3000
+
+# Opens at: http://localhost:3000/public/
+# Features: Basic text/image input
 ```
 
 ### Verify
@@ -152,8 +177,9 @@ grep VIT_MODEL ../.env
 ## 🌐 URLs Cheatsheet
 
 | Service | URL | Purpose |
-|---------|-----|---------|
-| Frontend | http://localhost:3000/ | Main UI |
+|---------|-----|---------||
+| **AngularJS Frontend** | http://localhost:4200/ | Modern UI (voice, image, sessions) |
+| Legacy Frontend | http://localhost:3000/public/ | Basic UI |
 | Backend Health | http://localhost:8000/health | Status check |
 | API Docs | http://localhost:8000/docs | Swagger UI |
 | Metrics | http://localhost:8000/metrics | Prometheus |
@@ -236,13 +262,15 @@ ngrok http 8000  # Get public URL
 ## ✅ Pre-Demo Checklist (60 seconds)
 
 - [ ] Backend running: `curl localhost:8000/health` → `{"status":"ok"}`
-- [ ] Frontend accessible: `curl localhost:3000/` → HTML
+- [ ] AngularJS Frontend: `curl localhost:4200/` → HTML
+- [ ] (Optional) Legacy Frontend: `curl localhost:3000/` → HTML
 - [ ] Test query works: Type "What is pneumonia?" → Get response
 - [ ] Image upload works: Upload X-ray → Get classification
+- [ ] Voice input works: Click microphone → Speak → Text appears (AngularJS only)
 - [ ] Confidence visible: Check response shows confidence level
 - [ ] HITL queue exists: `ls data/hitl_queue/` → Files present
 - [ ] Battery charged: Laptop plugged in
-- [ ] Browser tabs ready: localhost:3000, localhost:8000/docs
+- [ ] Browser tabs ready: localhost:4200, localhost:8000/docs
 
 ---
 
@@ -250,7 +278,7 @@ ngrok http 8000  # Get public URL
 
 "Hi! We built an intelligent medical assistant that doesn't just answer questions - it knows when to be uncertain. Let me show you..."
 
-[Open http://localhost:3000/ and type "What is pneumonia?"]
+[Open http://localhost:4200/ and click "Start Consultation", then type "What is pneumonia?" OR use voice input]
 
 ---
 

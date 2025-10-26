@@ -80,12 +80,13 @@ class Settings(BaseSettings):
     LOG_STRUCTURED: bool = True
 
     # CORS
-    FRONTEND_ORIGINS: list[str] = Field(default_factory=lambda: ["*"])
+    FRONTEND_ORIGINS: str = "*"  # Changed to string to avoid JSON parsing issues
 
     model_config = SettingsConfigDict(
         env_file="../.env",  # Look in parent directory
         env_file_encoding="utf-8",
-        extra="ignore"
+        extra="ignore",
+        json_schema_extra={"env_parse_none_str": ""}
     )
 
     @field_validator("QDRANT_PATH", "HITL_QUEUE_PATH", mode="before")
@@ -93,11 +94,9 @@ class Settings(BaseSettings):
     def _coerce_path(cls, value: str | Path) -> Path:
         return Path(value)
 
-    @field_validator("FRONTEND_ORIGINS", mode="before")
-    @classmethod
-    def _parse_origins(cls, value) -> list[str]:
-        if isinstance(value, str):
-            if value.strip() == "*":
-                return ["*"]
-            return [item.strip() for item in value.split(",") if item.strip()]
-        return value
+    @property
+    def cors_origins(self) -> list[str]:
+        """Parse FRONTEND_ORIGINS into a list for CORS middleware."""
+        if self.FRONTEND_ORIGINS.strip() == "*":
+            return ["*"]
+        return [origin.strip() for origin in self.FRONTEND_ORIGINS.split(",") if origin.strip()]
