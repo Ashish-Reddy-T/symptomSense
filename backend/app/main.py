@@ -28,6 +28,12 @@ async def lifespan(app: FastAPI):
     from .services.stt_service import WhisperService
     from .services.tts_service import PiperService
     from .storage.qdrant_client import ensure_collection, init_qdrant
+    # NEW: Import enhanced services
+    from .services.confidence_service import ConfidenceService
+    from .services.nlg_service import NLGService
+    from .services.hitl_service import HITLService
+    from .services.brave_search_service import BraveSearchService
+    from .agents.agent_combine import AgentOrchestrator
 
     gemini = GeminiClient(settings=settings)
     embed_dim = gemini.embedding_dimension
@@ -37,8 +43,35 @@ async def lifespan(app: FastAPI):
 
     retriever = GeminiRetriever(settings=settings, client=qdrant, gemini=gemini)
     vit_classifier = ViTImageClassifier(settings=settings)
-    stt_service = WhisperService(settings=settings)
-    tts_service = PiperService(settings=settings)
+    
+    # Initialize STT/TTS services if enabled
+    stt_service = WhisperService(settings=settings) if settings.STT_ENABLED else None
+    tts_service = PiperService(settings=settings) if settings.TTS_ENABLED else None
+
+    # NEW: Initialize enhanced services
+    confidence_service = ConfidenceService(
+        high_threshold=settings.MIN_IMAGE_CONFIDENCE,
+        medium_threshold=settings.HITL_CONFIDENCE_THRESHOLD,
+    )
+    
+    nlg_service = NLGService(tone=settings.NLG_TONE)
+    
+    hitl_service = HITLService(
+        queue_path=str(settings.HITL_QUEUE_PATH),
+        enabled=settings.HITL_ENABLED,
+        confidence_threshold=settings.HITL_CONFIDENCE_THRESHOLD,
+    )
+    
+    brave_service = BraveSearchService(
+        api_key=settings.BRAVE_API_KEY,
+        enabled=settings.BRAVE_SEARCH_ENABLED,
+        max_results=settings.BRAVE_MAX_RESULTS,
+    )
+    
+    orchestrator = AgentOrchestrator(
+        web_search_threshold=settings.AGENT_WEB_FALLBACK_THRESHOLD,
+        hitl_threshold=settings.HITL_CONFIDENCE_THRESHOLD,
+    )
 
     graph = build_graph(
         settings=settings,
@@ -47,6 +80,12 @@ async def lifespan(app: FastAPI):
         vit=vit_classifier,
         stt_service=stt_service,
         tts_service=tts_service,
+        # NEW: Pass enhanced services
+        confidence_service=confidence_service,
+        nlg_service=nlg_service,
+        hitl_service=hitl_service,
+        brave_service=brave_service,
+        orchestrator=orchestrator,
     )
 
     app.state.settings = settings
@@ -57,6 +96,12 @@ async def lifespan(app: FastAPI):
     app.state.stt_service = stt_service
     app.state.tts_service = tts_service
     app.state.graph = graph
+    # NEW: Store enhanced services in app state
+    app.state.confidence_service = confidence_service
+    app.state.nlg_service = nlg_service
+    app.state.hitl_service = hitl_service
+    app.state.brave_service = brave_service
+    app.state.orchestrator = orchestrator
 
     try:
         yield

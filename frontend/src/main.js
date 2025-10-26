@@ -73,8 +73,15 @@ async function fileToDataURL(file) {
 
 function renderAnswer(result) {
   lastAnswer = result.answer || '';
-  answerEl.innerHTML = lastAnswer;
+  answerEl.innerHTML = `<div class="answer-text">${lastAnswer}</div>`;
+  
+  // Show confidence profile if available
+  if (result.confidence_profile) {
+    renderConfidence(result.confidence_profile, result.hitl_flagged);
+  }
+  
   renderCitations(result.citations || []);
+  renderWebSources(result.web_sources || []);
   renderWarnings(result.warnings || []);
   renderFollowUp(result.follow_up || []);
   renderImageAnalysis(result.image_analysis || null);
@@ -115,6 +122,47 @@ function renderImageAnalysis(analysis) {
   }
   const confidence = analysis.confidence ? ` (${(analysis.confidence * 100).toFixed(1)}%)` : '';
   imageAnalysisEl.innerHTML = `<h3>Image Analysis</h3><p>${analysis.label}${confidence}</p>`;
+}
+
+function renderConfidence(profile, hitlFlagged) {
+  const level = profile.confidence_level || 'unknown';
+  const overall = (profile.overall_confidence * 100).toFixed(0);
+  const levelClass = level === 'high' ? 'conf-high' : level === 'medium' ? 'conf-medium' : 'conf-low';
+  
+  let html = `<div class="confidence-box ${levelClass}">
+    <strong>Confidence:</strong> ${overall}% (${level})`;
+  
+  if (hitlFlagged) {
+    html += `<br><span class="hitl-flag">⚠️ Flagged for expert review</span>`;
+  }
+  
+  html += '</div>';
+  
+  // Insert after answer text
+  const answerDiv = answerEl.querySelector('.answer-text');
+  if (answerDiv) {
+    const confDiv = document.createElement('div');
+    confDiv.innerHTML = html;
+    answerDiv.appendChild(confDiv);
+  }
+}
+
+function renderWebSources(webSources) {
+  if (!webSources || !webSources.length) return;
+  
+  let html = '<h3>🌐 Web Sources</h3><ul class="web-sources">';
+  webSources.forEach((source, i) => {
+    html += `<li>
+      <strong>[web${i+1}]</strong> <a href="${source.url}" target="_blank">${source.title}</a>
+      <br><small>${source.snippet}</small>
+    </li>`;
+  });
+  html += '</ul>';
+  
+  // Add to citations section
+  const webDiv = document.createElement('div');
+  webDiv.innerHTML = html;
+  citationsEl.appendChild(webDiv);
 }
 
 function renderError(error) {

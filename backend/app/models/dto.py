@@ -24,12 +24,31 @@ class Citation(BaseModel):
     score: float | None = None
 
 
+class WebSource(BaseModel):
+    title: str
+    url: str
+    snippet: str | None = None
+    published_date: str | None = None
+    relevance_score: float | None = None
+
+
+class ConfidenceProfile(BaseModel):
+    overall_confidence: float
+    image_confidence: float | None = None
+    rag_confidence: float | None = None
+    llm_confidence: float | None = None
+    confidence_level: str  # "high", "medium", "low"
+
+
 class ProcessInputResponse(BaseModel):
     answer: str
     citations: list[Citation] = Field(default_factory=list)
     warnings: list[str] = Field(default_factory=list)
     follow_up: list[str] = Field(default_factory=list)
     image_analysis: dict[str, Any] | None = None
+    web_sources: list[WebSource] = Field(default_factory=list)
+    confidence_profile: ConfidenceProfile | None = None
+    hitl_flagged: bool = False
 
 
 class STTResponse(BaseModel):

@@ -26,15 +26,30 @@ async def document_rag(
     except Exception as exc:  # pragma: no cover - network/runtime errors
         logger.exception("rag_retrieve_failed", error=str(exc))
         state["rag_documents"] = []
+        state["rag_scores"] = []
+        state["rag_metadata"] = []
         state["rag_error"] = str(exc)
         return state
-    state["rag_documents"] = [
-        {
+    
+    # NEW: Track scores and metadata separately for confidence calculation
+    rag_docs = []
+    rag_scores = []
+    rag_metadata = []
+    
+    for item in results:
+        rag_docs.append({
             "text": item.text,
             "score": item.score,
             "metadata": item.metadata,
             "citation": item.metadata.get("source_file") or item.metadata.get("source", "unknown"),
-        }
-        for item in results
-    ]
+        })
+        rag_scores.append(item.score)
+        rag_metadata.append({
+            "source_file": item.metadata.get("source_file") or item.metadata.get("source", "unknown"),
+            "score": item.score,
+        })
+    
+    state["rag_documents"] = rag_docs
+    state["rag_scores"] = rag_scores
+    state["rag_metadata"] = rag_metadata
     return state

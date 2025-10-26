@@ -1,0 +1,17 @@
+{
+  "id": "hitl_20251026_124018_395881",
+  "timestamp": "2025-10-26T12:40:18.396046",
+  "query": "Is this pneumonia?",
+  "image_data": "base64_image_data_here",
+  "initial_response": "Uncertain analysis...",
+  "confidence_profile": {
+    "overall_confidence": 0.58,
+    "image_confidence": 0.55,
+    "rag_confidence": 0.45,
+    "llm_confidence": 0.65,
+    "confidence_level": "low"
+  },
+  "status": "resolved",
+  "expert_feedback": "Confirmed diagnosis of pneumonia by radiologist",
+  "resolution_timestamp": "2025-10-26T12:40:18.396531"
+}

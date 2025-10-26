@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import base64
 import io
+import os
 from dataclasses import dataclass
+from pathlib import Path
 
 import structlog
 import torch
@@ -41,9 +43,21 @@ class ViTImageClassifier:
     ) -> None:
         self.settings = settings
         self.device = _resolve_device(settings.TORCH_DEVICE)
-        logger.info("loading_vit_model", model=settings.VIT_MODEL, device=self.device)
-        self.processor = processor or AutoImageProcessor.from_pretrained(settings.VIT_MODEL)
-        self.model = model or AutoModelForImageClassification.from_pretrained(settings.VIT_MODEL)
+        
+        # Use model path exactly as provided - but ensure it's treated as a local directory
+        model_path = settings.VIT_MODEL
+        
+        # Check if path exists as a directory - if so, load directly
+        if os.path.isdir(model_path):
+            logger.info("loading_vit_model_from_local", path=model_path, device=self.device)
+            from transformers import ViTImageProcessor, ViTForImageClassification
+            self.processor = processor or ViTImageProcessor.from_pretrained(model_path)
+            self.model = model or ViTForImageClassification.from_pretrained(model_path)
+        else:
+            logger.info("loading_vit_model_from_hub", model=model_path, device=self.device)
+            self.processor = processor or AutoImageProcessor.from_pretrained(model_path)
+            self.model = model or AutoModelForImageClassification.from_pretrained(model_path)
+        
         self.model.to(self.device)
         self.model.eval()
 

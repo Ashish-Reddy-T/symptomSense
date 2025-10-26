@@ -87,3 +87,61 @@ button:disabled {
 #image-analysis {
   margin-top: 1rem;
 }
+
+.confidence-box {
+  margin-top: 1rem;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  border-left: 4px solid;
+}
+
+.conf-high {
+  background: rgba(34, 197, 94, 0.1);
+  border-color: #22c55e;
+}
+
+.conf-medium {
+  background: rgba(251, 191, 36, 0.1);
+  border-color: #fbbf24;
+}
+
+.conf-low {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: #ef4444;
+}
+
+.hitl-flag {
+  color: #fbbf24;
+  font-weight: 600;
+}
+
+.web-sources {
+  list-style: none;
+  padding: 0;
+}
+
+.web-sources li {
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background: rgba(56, 189, 248, 0.05);
+  border-radius: 0.5rem;
+}
+
+.web-sources a {
+  color: #38bdf8;
+  text-decoration: none;
+}
+
+.web-sources a:hover {
+  text-decoration: underline;
+}
+
+.web-sources small {
+  color: #94a3b8;
+  display: block;
+  margin-top: 0.25rem;
+}
+
+.answer-text {
+  line-height: 1.6;
+}

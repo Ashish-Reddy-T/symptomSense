@@ -1,0 +1,17 @@
+{
+  "id": "hitl_20251026_135517_184305",
+  "timestamp": "2025-10-26T13:55:17.184377",
+  "query": "Analyze this X-ray",
+  "image_data": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAIAAAD/gAIDAAAA5UlEQVR4nO3QsQEAIAyAMPXynu4LZU9mJu7MHHbessOsxqzArMCswKzArMCswKzArMCswKzArMCswKzArMCswKzArMCswKzArMCswKzArMCswKzArMCswKzArMCswKzArMCswKzArMCswKzArMCswKzArMCswKzArMCswKzArMCswKzArMCswKzArMCswKzArMCswKzArMCswKzArMCswKzArMCswKzArMCswKzArMCswKzArMCswKzArMCswKzArMCswKzArMCswKzArMCswKzArMCswKzArMCswKzArMCswKyz9wHLZgJIGzMswQAAAABJRU5ErkJggg==",
+  "initial_response": "Based on available information, Based on the information provided, a detailed analysis of the X-ray cannot be performed. The \"Image Analysis\" source indicates that the content is \"Unknown\" with a confidence level of 62% [1].\n\nThis means that no specific findings or medical details about the X-ray are available from the provided data. Without any identifiable features or clinical information from the image itself, it is not possible to offer any actionable medical insights or recommendations at this time.\n\n**Recommended Next Steps:**\n\u2022 Seek professional medical evaluation due to diagnostic uncertainty\n\u2022 Correlate with clinical symptoms and patient history\n\u2022 Consider additional diagnostic tests if clinically indicated\n\u2022 Consult with a healthcare provider for comprehensive evaluation\n\n**Important Notice:** The confidence level for this analysis is low, indicating significant diagnostic uncertainty. Professional medical evaluation is strongly recommended. Do not make health decisions based solely on this assessment.",
+  "confidence_profile": {
+    "overall_confidence": 0.5,
+    "image_confidence": 0.625,
+    "rag_confidence": null,
+    "llm_confidence": 0.75,
+    "confidence_level": "low"
+  },
+  "status": "pending",
+  "expert_feedback": null,
+  "resolution_timestamp": null
+}

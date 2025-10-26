@@ -27,6 +27,8 @@ class Settings(BaseSettings):
     # Models
     VIT_MODEL: str = "backend/app/models/vit-xray-pneumonia"
     TORCH_DEVICE: Literal["cpu", "cuda"] = "cpu"
+    STT_ENABLED: bool = False
+    TTS_ENABLED: bool = False
     WHISPER_MODEL: str = "small"
     PIPER_VOICE: str = "en_US-amy-medium"
     PIPER_MODEL_PATH: str | None = None
@@ -52,6 +54,24 @@ class Settings(BaseSettings):
     MIN_IMAGE_CONFIDENCE: float = 0.8
     MIN_AVG_LOGPROB: float = -1.0
 
+    # Brave Search (NEW)
+    BRAVE_API_KEY: str | None = None
+    BRAVE_SEARCH_ENABLED: bool = True
+    BRAVE_MAX_RESULTS: int = 5
+
+    # Human-in-the-Loop (NEW)
+    HITL_ENABLED: bool = True
+    HITL_CONFIDENCE_THRESHOLD: float = 0.70
+    HITL_QUEUE_PATH: Path = Path("./data/hitl_queue")
+
+    # Natural Language Generation (NEW)
+    NLG_TONE: Literal["clinical", "conversational", "professional_conversational"] = "professional_conversational"
+    NLG_DISCLAIMER_MODE: Literal["minimal", "smart", "verbose"] = "smart"
+
+    # Agent Orchestration (NEW)
+    AGENT_WEB_FALLBACK_THRESHOLD: float = 0.5
+    AGENT_PARALLEL_EXECUTION: bool = True
+
     # App meta
     APP_HOST: str = "0.0.0.0"
     APP_PORT: int = 8000
@@ -62,9 +82,13 @@ class Settings(BaseSettings):
     # CORS
     FRONTEND_ORIGINS: list[str] = Field(default_factory=lambda: ["*"])
 
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+    model_config = SettingsConfigDict(
+        env_file="../.env",  # Look in parent directory
+        env_file_encoding="utf-8",
+        extra="ignore"
+    )
 
-    @field_validator("QDRANT_PATH", mode="before")
+    @field_validator("QDRANT_PATH", "HITL_QUEUE_PATH", mode="before")
     @classmethod
     def _coerce_path(cls, value: str | Path) -> Path:
         return Path(value)

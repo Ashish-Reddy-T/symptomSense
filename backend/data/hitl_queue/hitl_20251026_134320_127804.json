@@ -1,0 +1,17 @@
+{
+  "id": "hitl_20251026_134320_127804",
+  "timestamp": "2025-10-26T13:43:20.127887",
+  "query": "Analyze this X-ray",
+  "image_data": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAIAAAD/gAIDAAAA5UlEQVR4nO3QsQEAIAyAMPXynu4LZU9mJu7MHHbessOsxqzArMCswKzArMCswKzArMCswKzArMCswKzArMCswKzArMCswKzArMCswKzArMCswKzArMCswKzArMCswKzArMCswKzArMCswKzArMCswKzArMCswKzArMCswKzArMCswKzArMCswKzArMCswKzArMCswKzArMCswKzArMCswKzArMCswKzArMCswKzArMCswKzArMCswKzArMCswKzArMCswKzArMCswKzArMCswKzArMCswKzArMCswKzArMCswKyz9wHLZgJIGzMswQAAAABJRU5ErkJggg==",
+  "initial_response": "Based on available information, It appears that the X-ray image analysis data is currently unavailable, as indicated by \"Unknown (confidence: 62%)\" in the image analysis section. Therefore, I cannot provide a specific analysis of the X-ray you are asking about at this time.\n\nHowever, I can offer some general information regarding X-ray imaging and reporting, which might be helpful:\n\n*   **Reporting Guidelines:** When an X-ray is analyzed, a professional report is typically generated. This report follows essential clinical guidelines to ensure it is comprehensive and accurate. Key components include patient demographics, technical details of the examination, clinical indication, findings, and a conclusion or impression [web2].\n*   **Justification for X-rays:** The decision to perform an X-ray examination is an important one, guided by the principle of justification to ensure the benefits outweigh any potential risks, particularly concerning patient radiation dose [web1]. Guidelines, such as those for dental radiographic examinations, are periodically updated to reflect advancements in technology and science, ensuring appropriate use of X-rays [web3].\n*   **Radiation Dose:** Patient radiation dose is a significant consideration in medical imaging, and information specific to various modalities, such as CT (a related imaging technique), is often provided to help manage this aspect effectively [web1].\n\n**Recommended Next Steps:**\n\u2022 Seek professional medical evaluation due to diagnostic uncertainty\n\u2022 Correlate with clinical symptoms and patient history\n\u2022 Consider additional diagnostic tests if clinically indicated\n\u2022 Consult with a healthcare provider for comprehensive evaluation\n\n**Important Notice:** The confidence level for this analysis is low, indicating significant diagnostic uncertainty. Professional medical evaluation is strongly recommended. Do not make health decisions based solely on this assessment.",
+  "confidence_profile": {
+    "overall_confidence": 0.5,
+    "image_confidence": 0.625,
+    "rag_confidence": null,
+    "llm_confidence": 0.75,
+    "confidence_level": "low"
+  },
+  "status": "pending",
+  "expert_feedback": null,
+  "resolution_timestamp": null
+}

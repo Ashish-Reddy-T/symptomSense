@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter, HTTPException, Request
 
-from ..models.dto import Citation, ProcessInputRequest, ProcessInputResponse
+from ..models.dto import Citation, ProcessInputRequest, ProcessInputResponse, WebSource, ConfidenceProfile
 from ..telemetry.metrics import RequestTracker
 
 router = APIRouter()
@@ -33,6 +33,30 @@ async def process_input(req: ProcessInputRequest, request: Request) -> ProcessIn
         citation if isinstance(citation, Citation) else Citation(**citation)
         for citation in citations_data
     ]
+    
+    # Extract web sources if present
+    web_sources = []
+    if result.get("web_search_results"):
+        for web_result in result["web_search_results"]:
+            web_sources.append(
+                WebSource(
+                    url=web_result.get("url", ""),
+                    title=web_result.get("title", ""),
+                    snippet=web_result.get("snippet", ""),
+                )
+            )
+    
+    # Extract confidence profile if present
+    confidence_profile = None
+    if result.get("confidence_profile"):
+        conf_data = result["confidence_profile"]
+        confidence_profile = ConfidenceProfile(
+            overall_confidence=conf_data.get("overall_confidence", 0.0),
+            confidence_level=conf_data.get("confidence_level", "unknown"),
+            image_confidence=conf_data.get("image_confidence"),
+            rag_confidence=conf_data.get("rag_confidence"),
+            llm_confidence=conf_data.get("llm_confidence"),
+        )
 
     return ProcessInputResponse(
         answer=result.get("final_answer", ""),
@@ -40,4 +64,7 @@ async def process_input(req: ProcessInputRequest, request: Request) -> ProcessIn
         warnings=result.get("warnings") or [],
         follow_up=result.get("follow_up") or [],
         image_analysis=result.get("image_analysis"),
+        web_sources=web_sources,
+        confidence_profile=confidence_profile,
+        hitl_flagged=result.get("hitl_flagged", False),
     )
