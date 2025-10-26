@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from app.core.settings import Settings
+from backend.app.core.settings import Settings
 from backend.app.core.logging import configure_logging
 from backend.app.services.image_service import ViTImageClassifier
 from backend.app.services.rag_service import GeminiClient, GeminiRetriever
