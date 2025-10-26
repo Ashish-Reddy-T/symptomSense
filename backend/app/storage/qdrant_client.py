@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
+import uuid
 
 import structlog
 from qdrant_client import QdrantClient
@@ -50,13 +51,41 @@ def upsert_points(
 ) -> None:
     """Upsert points into Qdrant."""
     if ids is None:
-        ids = [str(i) for i in range(len(vectors))]
+        # Use UUIDs to be compatible with the local Qdrant storage implementation
+        ids = [str(uuid.uuid4()) for _ in range(len(vectors))]
 
     points = [
         PointStruct(id=pid, vector=vector, payload=payload)
         for pid, vector, payload in zip(ids, vectors, payloads, strict=False)
     ]
-    client.upsert(collection_name=collection, wait=True, points=points)
+
+    try:
+        client.upsert(collection_name=collection, wait=True, points=points)
+    except Exception as exc:
+        # If the failure is caused by a vector-size mismatch (e.g. collection
+        # was created for a different embedding dim), attempt to recreate the
+        # collection with the correct vector size and retry once.
+        msg = str(exc)
+        if "could not broadcast" in msg or "shape" in msg or "incompatible" in msg:
+            logger = structlog.get_logger(__name__)
+            logger.warning("qdrant_upsert_vector_shape_mismatch", error=msg, collection=collection)
+            try:
+                client.delete_collection(collection_name=collection)
+            except Exception:
+                pass
+            # Create collection with vector size inferred from first vector
+            if vectors:
+                vec_size = len(vectors[0])
+            else:
+                vec_size = 0
+            client.create_collection(
+                collection_name=collection,
+                vectors_config=VectorParams(size=vec_size, distance=Distance.COSINE),
+            )
+            # Retry upsert once
+            client.upsert(collection_name=collection, wait=True, points=points)
+            return
+        raise
 
 
 def query_collection(
@@ -82,3 +111,15 @@ def query_collection(
         }
         for hit in result
     ]
+
+
+def get_collection_count(client: QdrantClient, collection: str) -> int:
+    """Return the number of points in a collection (best-effort).
+
+    This wraps Qdrant's count API and returns 0 on error.
+    """
+    try:
+        cnt = client.count(collection_name=collection)
+        return int(getattr(cnt, "count", 0) or 0)
+    except Exception:
+        return 0

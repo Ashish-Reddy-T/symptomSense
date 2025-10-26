@@ -94,12 +94,53 @@ class GeminiClient:
             model_name=settings.GEMINI_MODEL
         )
         self._embedding_dim: int | None = settings.GEMINI_EMBED_DIMENSION
+        # Optional local embedding fallback (lazy-loaded)
+        self._local_embedder = None
+        self._use_local = bool(getattr(settings, "USE_LOCAL_EMBEDDINGS", False))
+        self._local_model_name = getattr(settings, "LOCAL_EMBED_MODEL", "all-MiniLM-L6-v2")
 
     def embed(self, text: str) -> list[float]:
-        vector = _embed_text(self._embed_model_name, text)
-        if self._embedding_dim is None:
-            self._embedding_dim = len(vector)
-        return vector
+        # If configured to use local embeddings, prefer them first.
+        if self._use_local:
+            try:
+                if self._local_embedder is None:
+                    from sentence_transformers import SentenceTransformer
+
+                    try:
+                        self._local_embedder = SentenceTransformer(self._local_model_name)
+                    except Exception:
+                        # fallback to a small, reliable model
+                        self._local_embedder = SentenceTransformer("all-MiniLM-L6-v2")
+                vec = self._local_embedder.encode(text)
+                vec_list = list(map(float, vec.tolist())) if hasattr(vec, "tolist") else list(map(float, vec))
+                if self._embedding_dim is None:
+                    self._embedding_dim = len(vec_list)
+                return vec_list
+            except Exception as exc:  # pragma: no cover - fallback to Gemini
+                logger = structlog.get_logger(__name__)
+                logger.warning("local_embed_failed", error=str(exc), fallback=self._local_model_name)
+
+        # Default: try Gemini embeddings first (if allowed), otherwise use local as fallback
+        try:
+            vector = _embed_text(self._embed_model_name, text)
+            if self._embedding_dim is None:
+                self._embedding_dim = len(vector)
+            return vector
+        except Exception as exc:  # pragma: no cover - fallback path
+            logger = structlog.get_logger(__name__)
+            logger.warning("gemini_embed_failed", error=str(exc), fallback="local_sentence_transformer")
+            try:
+                if self._local_embedder is None:
+                    from sentence_transformers import SentenceTransformer
+
+                    self._local_embedder = SentenceTransformer(self._local_model_name)
+                vec = self._local_embedder.encode(text)
+                vec_list = list(map(float, vec.tolist())) if hasattr(vec, "tolist") else list(map(float, vec))
+                if self._embedding_dim is None:
+                    self._embedding_dim = len(vec_list)
+                return vec_list
+            except Exception:
+                raise
 
     def embed_batch(self, texts: Sequence[str]) -> list[list[float]]:
         return [self.embed(text) for text in texts]
@@ -116,7 +157,7 @@ class GeminiClient:
             self._embedding_dim = len(probe_vector)
         except Exception as exc:  # pragma: no cover - offline environments
             logger.warning("gemini_embedding_probe_failed: %s", exc)
-            self._embedding_dim = self.settings.GEMINI_EMBED_DIMENSION or 3072
+            self._embedding_dim = 384 # self.settings.GEMINI_EMBED_DIMENSION or 3072
         return self._embedding_dim
 
     def generate_with_fallback(self, prompt: str) -> str:
@@ -201,9 +242,45 @@ class GeminiRetriever:
         if not query.strip():
             return []
         vector = self.gemini.embed(query)
+        # Try to locate an appropriate collection. The ingestion process may
+        # have created a collection with a different embedding dimension
+        # suffix (e.g. "medical-knowledge_d384"). Prefer an exact configured
+        # collection name if it exists; otherwise pick the most populated
+        # collection that starts with the configured base name.
+        base_collection = collection or self.settings.QDRANT_COLLECTION
+        try:
+            cols = getattr(self.client.get_collections(), "collections", [])
+            col_names = [c.name for c in cols]
+        except Exception:
+            col_names = []
+
+        chosen = None
+        if base_collection in col_names:
+            chosen = base_collection
+        else:
+            # find collections that start with the base name
+            candidates = [n for n in col_names if n.startswith(base_collection)]
+            if candidates:
+                # pick the candidate with the largest point count
+                best = None
+                best_count = -1
+                from ..storage.qdrant_client import get_collection_count
+
+                for c in candidates:
+                    try:
+                        cnt = get_collection_count(self.client, c)
+                    except Exception:
+                        cnt = 0
+                    if cnt > best_count:
+                        best_count = cnt
+                        best = c
+                chosen = best or candidates[0]
+        if chosen is None:
+            chosen = base_collection
+
         hits = query_collection(
             self.client,
-            collection=collection or self.settings.QDRANT_COLLECTION,
+            collection=chosen,
             query_vector=vector,
             top_k=top_k * 2,
         )

@@ -34,6 +34,21 @@ def ingest() -> None:
 
     gemini = GeminiClient(settings=settings)
     embed_dim = gemini.embedding_dimension
+    # If the developer left QDRANT_MODE=memory, warn and switch to a disk
+    # backed instance for ingestion so the vectors persist and are visible to
+    # the API process. In-memory Qdrant instances live only in-process and
+    # therefore a separate ingest run would not populate the running API.
+    if settings.QDRANT_MODE == "memory":
+        logger.warning(
+            "qdrant_memory_mode_ingest",
+            msg=(
+                "QDRANT_MODE=memory; ingestion will create an ephemeral in-memory DB "
+                "that won't be visible to the running API. Switching to disk at './data/qdrant_db' for persistence."
+            ),
+        )
+        settings.QDRANT_MODE = "disk"
+        settings.QDRANT_PATH = Path("./data/qdrant_db")
+
     qdrant = init_qdrant(settings)
     ensure_collection(qdrant, settings.QDRANT_COLLECTION, vector_size=embed_dim)
     retriever = GeminiRetriever(settings=settings, client=qdrant, gemini=gemini)

@@ -32,7 +32,19 @@ class Settings(BaseSettings):
     PIPER_MODEL_PATH: str | None = None
     GEMINI_MODEL: str = "models/gemini-2.5-flash"
     GEMINI_EMBED_MODEL: str = "models/text-embedding-005"
-    GEMINI_EMBED_DIMENSION: int | None = None
+    # Many local sentence-transformers produce 384-d embeddings (all-MiniLM-L6-v2).
+    # Set a sensible default so Qdrant collections created at startup match local
+    # fallback embeddings when external embedding providers (Gemini) are
+    # unavailable or rate-limited.
+    GEMINI_EMBED_DIMENSION: int | None = 384
+    # Prefer open-source/local embeddings instead of Gemini when True.
+    USE_LOCAL_EMBEDDINGS: bool = True
+    # Local embedding model name (sentence-transformers or HF model). You can
+    # set this to 'BAAI/bge-large-en' or another HF model name; the code will
+    # fall back to 'all-MiniLM-L6-v2' if the requested model can't be loaded.
+    # Use a small, fast local model by default to avoid long downloads in dev.
+    # Set to 'BAAI/bge-large-en' if you want to use that larger model.
+    LOCAL_EMBED_MODEL: str = "all-MiniLM-L6-v2"
     OPENROUTER_MODEL: str = "openrouter/mistral-7b-instruct"
     RERANKER_MODEL: str = "cross-encoder/ms-marco-MiniLM-L-6-v2"
 

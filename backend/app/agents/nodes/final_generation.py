@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 from typing import Any
+import re
 
 from ...core.settings import Settings
 from ...models.schema import AgentAnswer
@@ -89,7 +90,29 @@ User query:
         return state
 
     try:
-        parsed = AgentAnswer.model_validate_json(raw)
+        # try to extract a JSON payload from the model output (handles code
+        # fences, ```json blocks, or inline JSON). This makes the parser more
+        # robust when the LLM includes markdown formatting.
+        def _extract_json_from_text(text: str) -> str:
+            t = (text or "").strip()
+            if not t:
+                return t
+            # Look for ```json\n{...}``` blocks first
+            m = re.search(r"```(?:json)?\s*\n(.*?)\n```", t, re.S | re.I)
+            if m:
+                return m.group(1).strip()
+            # Fallback: any fenced block
+            m = re.search(r"```(.*?)```", t, re.S)
+            if m:
+                return m.group(1).strip()
+            # Fallback: first JSON object in the text
+            m = re.search(r"(\{.*\})", t, re.S)
+            if m:
+                return m.group(1).strip()
+            return t
+
+        json_payload = _extract_json_from_text(raw)
+        parsed = AgentAnswer.model_validate_json(json_payload)
     except Exception as exc:  # pragma: no cover - parsing errors
         # pass large/unstructured data via the `extra` mapping so stdlib logging
         # (and adapters) don't receive unexpected keyword args. Keep a concise
@@ -101,9 +124,34 @@ User query:
         )
         parsed = AgentAnswer(answer=raw.strip(), citations=[], follow_up=[], warnings=[])
 
-    answer_with_citations = parsed.answer.strip()
-    state["final_answer"] = answer_with_citations
+    # Build a human-friendly textual answer rather than returning raw JSON.
+    answer_lines: list[str] = []
+    answer_lines.append(parsed.answer.strip())
+
+    # Attach retrieval sources (if any)
     state["citations"] = citations
+    if citations:
+        answer_lines.append("\nSources:")
+        for c in citations:
+            lbl = c.get("label")
+            src = c.get("source") or "unknown"
+            score = c.get("score")
+            score_part = f" (score={score:.3f})" if isinstance(score, (int, float)) else ""
+            answer_lines.append(f"- {lbl}: {src}{score_part}")
+
+    # Include follow-up suggestions and warnings for readability
+    if parsed.follow_up:
+        answer_lines.append("\nSuggested follow-up:")
+        for item in parsed.follow_up:
+            answer_lines.append(f"- {item}")
+
+    if parsed.warnings:
+        answer_lines.append("\nWarnings:")
+        for w in parsed.warnings:
+            answer_lines.append(f"- {w}")
+
+    answer_with_citations = "\n".join(answer_lines)
+    state["final_answer"] = answer_with_citations
     state.setdefault("warnings", [])
     if parsed.warnings:
         state["warnings"].extend(parsed.warnings)
