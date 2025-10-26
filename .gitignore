@@ -19,11 +19,7 @@ dist/
 .DS_Store
 
 # Data
-/data/knowledge_base/
-/data/qdrant_db/
-/data/**/*.pdf
-/data/**/*.json
-/data/**/*.csv
+
 
 # Frontend bundles
 frontend/dist/
