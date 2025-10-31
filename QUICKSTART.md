@@ -1,6 +1,6 @@
 # 🎯 QUICK START - Agentic Medical Assistant
 
-**For Hackathon Demo - 2 Minute Setup**
+**QuickStart for NewBies**
 
 ---
 
@@ -29,23 +29,6 @@ http://localhost:4200/
 # OR Legacy Frontend:
 http://localhost:3000/public/
 ```
-
-### Step 3: Run Demo Query (20 seconds)
-1. Type: **"What are the symptoms of pneumonia?"**
-2. Click **"Run"**
-3. Show response with:
-   - Natural language answer
-   - Confidence score
-   - Citations
-
-### Step 4: Image Demo (1 minute)
-1. Upload chest X-ray image
-2. Type: **"Analyze this X-ray"**
-3. Click **"Run"**
-4. Show:
-   - Classification result (NORMAL/PNEUMONIA)
-   - Confidence percentage
-   - HITL flag if low confidence
 
 ---
 
@@ -89,43 +72,6 @@ cd /Users/AshishR_T/Desktop/hackPSU/agentic-med-assistant
 
 ---
 
-## 🎤 Demo Script (3 minutes)
-
-### Introduction (30 seconds)
-"We built an agentic medical assistant that combines multiple AI services:
-- Vision Transformer for X-ray analysis
-- RAG with medical knowledge base
-- Web search for latest information
-- Confidence scoring with human-in-loop
-- LangGraph orchestration"
-
-### Demo 1: Text Query (45 seconds)
-1. Navigate to http://localhost:3000/
-2. Query: "What is pneumonia?"
-3. Point out:
-   - Natural language response (NLG service)
-   - Knowledge base citations (RAG)
-   - Confidence score (medium/high)
-
-### Demo 2: Image Classification (60 seconds)
-1. Upload X-ray image
-2. Query: "What does this show?"
-3. Point out:
-   - ViT classification (PNEUMONIA/NORMAL)
-   - Confidence percentage
-   - **HITL flag** if low confidence
-   - Disclaimer about medical review
-
-### Demo 3: Multi-Modal (45 seconds)
-1. Upload image + text: "Is this pneumonia? What treatment?"
-2. Point out:
-   - Combined image + text analysis
-   - Orchestrator routing to multiple agents
-   - Treatment recommendations from knowledge base
-   - Overall confidence aggregation
-
----
-
 ## 🔧 Emergency Fixes
 
 ### "Backend not responding"
@@ -164,31 +110,7 @@ grep VIT_MODEL ../.env
 
 ---
 
-## 📊 Key Metrics to Highlight
-
-- **6+ Specialized Services**: NLG, HITL, Confidence, Brave, VIT, RAG, Orchestrator
-- **Multi-Modal**: Text, images, and combinations
-- **Confidence-Aware**: System knows when it's uncertain
-- **HITL Integration**: Low confidence → human review queue
-- **Production Ready**: Docker, tests, metrics, docs
-
----
-
-## 🌐 URLs Cheatsheet
-
-| Service | URL | Purpose |
-|---------|-----|---------||
-| **AngularJS Frontend** | http://localhost:4200/ | Modern UI (voice, image, sessions) |
-| Legacy Frontend | http://localhost:3000/public/ | Basic UI |
-| Backend Health | http://localhost:8000/health | Status check |
-| API Docs | http://localhost:8000/docs | Swagger UI |
-| Metrics | http://localhost:8000/metrics | Prometheus |
-| Logs | `/tmp/backend.log` | Backend logs |
-| HITL Queue | `data/hitl_queue/` | Flagged items |
-
----
-
-## 🧪 Test Queries
+## 🧪 Sample Test Queries
 
 ### Simple Medical
 ```
@@ -219,69 +141,10 @@ Upload X-ray + "Diagnose and recommend next steps"
 
 ---
 
-## 🏆 Judge Questions - Prepared Answers
-
-**Q: How does your system handle uncertainty?**
-A: We use confidence scoring across multiple sources (VIT, LLM, RAG) and aggregate them. Low confidence (<70%) automatically flags items for human review in our HITL queue.
-
-**Q: How is this different from ChatGPT?**
-A: We use specialized agents (image classifier, medical RAG, web search) orchestrated by LangGraph. Each agent is expert in its domain, and we combine their outputs with confidence tracking.
-
-**Q: What if the model is wrong?**
-A: Low confidence cases are automatically flagged for medical professional review. We also provide citations so users can verify information sources.
-
-**Q: Can it handle multi-modal inputs?**
-A: Yes! Upload an X-ray and ask a text question - our orchestrator routes to both image analysis and text processing agents, then combines results.
-
-**Q: How do you ensure medical accuracy?**
-A: Three layers: (1) RAG from curated medical documents, (2) Confidence scoring to detect uncertainty, (3) HITL flagging for professional review.
-
----
-
-## 📱 Backup Plans
-
-### Plan A: Local Demo (Primary)
-- Both servers on localhost
-- Fastest, most reliable
-- No internet dependency for core features
-
-### Plan B: Ngrok Public Demo
-```bash
-ngrok http 8000  # Get public URL
-# Update frontend/src/api.js with ngrok URL
-# Share public link with judges
-```
-
-### Plan C: Video Recording
-- Record successful demo beforehand
-- Show validation report (VALIDATION_REPORT.md)
-- Walk through code architecture (AGENTS.md)
-
----
-
-## ✅ Pre-Demo Checklist (60 seconds)
-
-- [ ] Backend running: `curl localhost:8000/health` → `{"status":"ok"}`
-- [ ] AngularJS Frontend: `curl localhost:4200/` → HTML
-- [ ] (Optional) Legacy Frontend: `curl localhost:3000/` → HTML
-- [ ] Test query works: Type "What is pneumonia?" → Get response
-- [ ] Image upload works: Upload X-ray → Get classification
-- [ ] Voice input works: Click microphone → Speak → Text appears (AngularJS only)
-- [ ] Confidence visible: Check response shows confidence level
-- [ ] HITL queue exists: `ls data/hitl_queue/` → Files present
-- [ ] Battery charged: Laptop plugged in
-- [ ] Browser tabs ready: localhost:4200, localhost:8000/docs
-
----
-
-## 🎬 Opening Line
+## 🎬 Go Voice Your Thoughts
 
 "Hi! We built an intelligent medical assistant that doesn't just answer questions - it knows when to be uncertain. Let me show you..."
 
-[Open http://localhost:4200/ and click "Start Consultation", then type "What is pneumonia?" OR use voice input]
+**SAMPLE**: [Open http://localhost:4200/ and click "Start Consultation", then type "What is pneumonia?" OR use voice input]
 
 ---
-
-**Last Updated**: 2025-01-26  
-**Status**: ✅ READY FOR DEMO  
-**Estimated Demo Time**: 3-5 minutes
